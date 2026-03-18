@@ -1,9 +1,21 @@
+const crypto = require("crypto");
+
+function hashValue(value) {
+  return crypto
+    .createHash("sha256")
+    .update(value.toString())
+    .digest("hex");
+}
+
 function generateProof(score, threshold) {
-  const valid = score >= threshold;
+  const commitment = hashValue(score);
+
+  const isValid = score >= threshold;
 
   return {
-    proof: valid,
-    statement: "El score es mayor o igual que el threshold"
+    commitment,        // hash del score
+    threshold,         // público
+    result: isValid    // afirmación del prover
   };
 }
 

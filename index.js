@@ -1,22 +1,25 @@
 const { generateProof } = require("./prover");
 const { verifyProof } = require("./verifier");
 
-// Dato privado
-const privateScore = 812;
+// Dato privado REAL
+const privateScore = 700; // 👈 NO cumple
 
 // Regla pública
 const publicThreshold = 750;
 
-console.log("=== SISTEMA ZK SIMULADO ===");
+console.log("=== PRUEBA CON POSIBLE TRAMPA ===");
 
 // El prover genera la prueba
 const proofData = generateProof(privateScore, publicThreshold);
 
-// Información pública
-console.log("Regla:", proofData.statement);
-console.log("Threshold:", publicThreshold);
+// 👇 SIMULAMOS TRAMPA
+proofData.result = true; // el prover intenta mentir
 
-// El verifier verifica la prueba
+console.log("Commitment:", proofData.commitment);
+console.log("Threshold:", proofData.threshold);
+console.log("Resultado declarado:", proofData.result);
+
+// Verifier valida
 const result = verifyProof(proofData);
 
 console.log("¿Prueba válida?", result);

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>ZK App</h1>
+
+    <button onclick="generate()">Generar proof</button>
+
+    <script>
+      function generate() {
+        fetch("/prove?score=812&threshold=750")
+          .then(res => res.text())
+          .then(data => alert(data));
+      }
+    </script>
+  </body>
+</html>

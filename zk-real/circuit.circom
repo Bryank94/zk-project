@@ -8,11 +8,11 @@ template ThresholdCheck() {
 
     component gte = GreaterEqThan(32);
 
-    
-    gte.in[0] <== threshold;
-    gte.in[1] <== score;
+    gte.in[0] <== score;
+    gte.in[1] <== threshold;
 
     gte.out === 1;
 }
 
-component main = ThresholdCheck();
+// 👇 AQUÍ EL CAMBIO IMPORTANTE
+component main {public [threshold]} = ThresholdCheck();
