@@ -1,16 +1,93 @@
 <!DOCTYPE html>
-<html>
-  <body>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ZK App FINAL</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #resultado {
+            background: #f4f4f4;
+            padding: 15px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
     <h1>ZK App</h1>
 
-    <button onclick="generate()">Generar proof</button>
+    <label>Score:</label>
+    <input id="score" value="812"><br><br>
+
+    <label>Min:</label>
+    <input id="min" value="700"><br><br>
+
+    <label>Max:</label>
+    <input id="max" value="850"><br><br>
+
+    <!-- 🔥 NUEVO CAMPO -->
+    <label>Age:</label>
+    <input id="age" type="number" value="25"><br><br>
+
+    <button onclick="run()">Generar + Verificar</button>
+
+    <pre id="resultado"></pre>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
 
     <script>
-      function generate() {
-        fetch("/prove?score=812&threshold=750")
-          .then(res => res.text())
-          .then(data => alert(data));
-      }
+        async function run() {
+            const resultado = document.getElementById("resultado");
+
+            try {
+                resultado.innerText = "1) Generando proof...\n";
+
+                const score = document.getElementById("score").value;
+                const min = document.getElementById("min").value;
+                const max = document.getElementById("max").value;
+                const age = document.getElementById("age").value; // 🔥 NUEVO
+
+                // Llamar backend (añadimos age)
+                const res = await fetch(`/prove?score=${score}&min=${min}&max=${max}&age=${age}`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+
+                resultado.innerText += "2) Proof OK\n";
+
+                const pA = data.pA;
+                const pB = data.pB;
+                const pC = data.pC;
+                const pubSignals = data.pubSignals;
+
+                if (!pA || !pB || !pC || !pubSignals) {
+                    throw new Error("Datos de proof no recibidos");
+                }
+
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                const signer = await provider.getSigner();
+
+                const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+                const abi = [
+                "function verifyProof(uint256[2],uint256[2][2],uint256[2],uint256[2]) public view returns(bool)"
+                ]
+
+                const contract = new ethers.Contract(contractAddress, abi, signer);
+
+                resultado.innerText += "3) Verificando on-chain...\n";
+
+                const ok = await contract.verifyProof(pA, pB, pC, pubSignals);
+
+                resultado.innerText += "Resultado: " + ok + "\n";
+
+            } catch (err) {
+                resultado.innerText = "ERROR: " + err.message;
+            }
+        }
     </script>
-  </body>
+</body>
 </html>
